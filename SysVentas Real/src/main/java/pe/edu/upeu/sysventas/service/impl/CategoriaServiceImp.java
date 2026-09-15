@@ -6,7 +6,6 @@ import pe.edu.upeu.sysventas.repository.ICrudGenericoRepository;
 import pe.edu.upeu.sysventas.service.ICategoriaService;
 
 public class CategoriaServiceImp extends CrudGenericoServiceImp<Categoria, Long> implements ICategoriaService {
-
     private final CategoriaRepository categoriaRepository;
 
     public CategoriaServiceImp(CategoriaRepository categoriaRepository) {

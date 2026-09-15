@@ -7,6 +7,7 @@ public class CategoriaRepository extends AbstractJpaRepository <Categoria, Long>
 
     @Override
     protected Long getId(Categoria entity) {
+
         return entity.getIdCategoria();
     }
 
