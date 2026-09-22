@@ -6,6 +6,6 @@ import pe.edu.upeu.sysventas.model.Producto;
 import java.util.List;
 
 public interface IProductoService extends ICrudGenericoService<Producto, Long>{
-    //List<ComboBoxOption> listarTipoProducto();
+    List<ComboBoxOption> listarTipoProducto();
 
 }
