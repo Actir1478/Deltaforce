@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import pe.edu.upeu.sysventas.SysVentas;
 import pe.edu.upeu.sysventas.config.AppContext;
+import pe.edu.upeu.sysventas.dto.SessionManager;
 import pe.edu.upeu.sysventas.model.Usuario;
 import pe.edu.upeu.sysventas.service.IUsuarioService;
 
@@ -35,6 +36,11 @@ public class LoginController {
     }
 
     public void abrirPantalla(ActionEvent e, Usuario usuario){
+
+        SessionManager.getInstance().setUserId(usuario.getIdUsuario());
+        SessionManager.getInstance().setUserName(usuario.getUsuario());
+        SessionManager.getInstance().setUserPerfil(usuario.getIdPerfil().getNombre());
+
         try {
             Screen screen=Screen.getPrimary();
             Rectangle2D rectangle2D=screen.getVisualBounds();
