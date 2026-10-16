@@ -55,6 +55,8 @@ public class AppContext {
 
         registrar(IUsuarioService.class, new UsuarioServiceImp(getBean(UsuarioRepository.class)));
 
+        registrar(IMenuMenuItemDao.class, new MenuMenuItemDaoImp());
+
 
     }
 
