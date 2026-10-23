@@ -58,6 +58,7 @@ public class MainGuiController {
             FXCollections.observableArrayList("Español", "Ingles"));
     CustomMenuItem customItemIdioma = new CustomMenuItem(comboBoxIdioma);
 
+
     @FXML
     public void initialize(){
         PauseTransition pause = new PauseTransition(Duration.millis(300));
@@ -76,7 +77,6 @@ public class MainGuiController {
         myresources = util.detectLanguage(userPrefs.get("IDIOMAX", "es"));
         return mmiDao.listaAccesos(SessionManager.getInstance().getUserPerfil(), myresources);
     }
-
     private void cambiarEstilo() {
         String estiloSeleccionado = comboBoxEstilo.getSelectionModel().getSelectedItem();
         Scene escena = bp.getScene();
@@ -154,13 +154,13 @@ public class MainGuiController {
         bp.setTop(menuBar);
     }
 
-        class MenuItemListener{
-            Map<String, String[]> menuConfig;
-            MenuItemListener() {
-                menuConfig = mmiDao.accesosAutorizados(lista);
-            }
+    class MenuItemListener{
+        Map<String, String[]> menuConfig;
+        MenuItemListener() {
+            menuConfig = mmiDao.accesosAutorizados(lista);
+        }
 
-            public void handle(ActionEvent e){
+        public void handle(ActionEvent e){
             String id=((MenuItem)e.getSource()).getId();
             if(menuConfig.containsKey(id)){
                 String[] items=menuConfig.get(id);
@@ -174,27 +174,27 @@ public class MainGuiController {
             }
         }
 
-            private void redireccionar(String fxmlPath) {
-                tabPane.getTabs().clear();
-                try {
-                    AppContext ctx = AppContext.getInstance();
-                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath));
-                    fxmlLoader.setControllerFactory(clazz -> ctx.getBean(clazz));
-                    parent = fxmlLoader.load();
-                    Scene scene = new Scene(parent);
-                    stage.sizeToScene();
-                    stage.setScene(scene);
-                    stage.centerOnScreen();
-                    stage.setTitle("SysVentas SysCenterLife");
-                    stage.setResizable(false);
-                    stage.show();
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
+        private void redireccionar(String fxmlPath) {
+            tabPane.getTabs().clear();
+            try {
+                AppContext ctx = AppContext.getInstance();
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+                fxmlLoader.setControllerFactory(clazz -> ctx.getBean(clazz));
+                parent = fxmlLoader.load();
+                Scene scene = new Scene(parent);
+                stage.sizeToScene();
+                stage.setScene(scene);
+                stage.centerOnScreen();
+                stage.setTitle("SysVentas SysCenterLife");
+                stage.setResizable(false);
+                stage.show();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
+        }
 
 
-            private void abrirTabPaneFXML(String fxmlPath, String tittle){
+        private void abrirTabPaneFXML(String fxmlPath, String tittle){
             try {
                 AppContext context = AppContext.getInstance();
                 FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath));

@@ -12,7 +12,6 @@ import javafx.scene.control.TextField;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
-
 import pe.edu.upeu.sysventas.SysVentas;
 import pe.edu.upeu.sysventas.components.Toast;
 import pe.edu.upeu.sysventas.config.AppContext;
@@ -28,27 +27,33 @@ public class LoginController {
 
     @FXML
     TextField txtUsuario;
+
     @FXML
     PasswordField txtClave;
 
     @FXML
     public void login(ActionEvent e){
-        us.loginUsuario(txtUsuario.getText(), txtClave.getText())
-                .ifPresentOrElse(usuario -> {abrirPantalla(e,usuario);},
-                    () -> {
-                    mensaje(e,"Error en las credenciales... Intente nuevamente");
-                }
-        );
+       us.loginUsuario(txtUsuario.getText(), txtClave.getText())
+               .ifPresentOrElse(
+                       usuario ->{
+                           abrirPantalla(e,usuario);
+                       },
+                       () -> {
+                           mensaje(e,"Error en las credenciales...Intenete nuevamente");
+                       }
+               );
+
     }
 
+
     public void mensaje(ActionEvent e, String msg){
-        Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
+        Stage stage=(Stage) ((Node)e.getSource()).getScene().getWindow();
         double w = stage.getWidth() / 1.5, h = stage.getHeight() / 2;
         Toast.showToast(stage, msg, 2000, w, h);
     }
 
     @FXML
-    public void logout() {
+    public void logout(){
         Platform.exit();
         System.exit(0);
         DatabaseConfig.shutdown();
@@ -66,17 +71,23 @@ public class LoginController {
             AppContext appContext=AppContext.getInstance();
             FXMLLoader fxmlLoader = new FXMLLoader(SysVentas.class.getResource("/view/maingui.fxml"));
             fxmlLoader.setControllerFactory(appContext::getBean);
-            Scene scene = new Scene(fxmlLoader.load(),rectangle2D.getWidth(),rectangle2D.getHeight());
+            Scene scene = new Scene(fxmlLoader.load(), rectangle2D.getWidth(), rectangle2D.getHeight());
             scene.getStylesheets().add(SysVentas.class.getResource("/css/style.css").toExternalForm());
-            Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
+            Stage stage=(Stage) ((Node)e.getSource()).getScene().getWindow();
             stage.setTitle("Hello!");
             stage.setScene(scene);
             stage.setX(rectangle2D.getMinX());
             stage.setY(rectangle2D.getMinY());
             stage.setResizable(true);
             stage.show();
-        }catch (Exception ex) { ex.printStackTrace(); }
+
+        }catch (Exception ex){ ex.printStackTrace(); }
 
     }
+
+
+
+
+
 
 }

@@ -26,4 +26,3 @@ public class SysVentas extends Application {
         stage.show();
     }
 }
-//eres una grrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr

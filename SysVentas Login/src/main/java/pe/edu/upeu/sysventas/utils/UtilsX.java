@@ -8,7 +8,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
-//Esta parte lee archivos properties como ejemplo
+
 public class UtilsX {
 
     public URL getFile(String ruta) {
