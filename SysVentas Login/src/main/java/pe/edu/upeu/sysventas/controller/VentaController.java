@@ -191,6 +191,7 @@ public class VentaController {
                     .nombres(razonSocial.getText())
                     .repLegal(razonSocial.getText())
                     .tipoDocumento(TipoDocumento.DNI)
+                    .direccion(txtDireccion.getText())
                     .build();
             cs.save(c);
             btnRegCliente.setDisable(true);
@@ -332,6 +333,8 @@ public class VentaController {
             daoC.deleteCarAll(dniRuc.getText());
             listar();
             idX.setDetalleVenta(vdList);
+            double with=stage.getMaxWidth()/2;
+            Toast.showToast(stage, "Venta exitosa", 2000, with, 50);
 
         }else{
             Stage stage = StageManager.getPrimaryStage();
