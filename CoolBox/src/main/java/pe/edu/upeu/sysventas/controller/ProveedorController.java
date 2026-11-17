@@ -76,6 +76,18 @@ public class ProveedorController {
 
         tableViewHelper.addColumnsInOrderWithSize(tableView, columns, updateAction, deleteAction);
         tableView.setTableMenuButtonVisible(true);
+        // Pinta de azul las filas de proveedores con DNI
+        tableView.setRowFactory(tv -> new TableRow<Proveedor>() {
+            @Override
+            protected void updateItem(Proveedor item, boolean empty) {
+                super.updateItem(item, empty);
+                if (!empty && item != null && "DNI".equalsIgnoreCase(item.getTipoDoc())) {
+                    setStyle("-fx-background-color: #cfe2ff;");   // azul
+                } else {
+                    setStyle("");
+                }
+            }
+        });
 
         txtFiltroDato.textProperty().addListener((obs, o, n) -> filtrarProveedores(n));
         lbnMsg.setText("");
@@ -121,10 +133,30 @@ public class ProveedorController {
                 .sorted(Comparator.comparing(v -> v.getPropertyPath().toString())).toList();
 
         if (violacionesOrdenadas.isEmpty()) {
+            // Regla extra (Yerson): el largo del documento depende de su tipo
+            String error = validarDocumento(formulario.getTipoDoc(), formulario.getDniruc());
+            if (error != null) {
+                limpiarError();
+                ttc.marcarError(txtDniRuc, error);
+                lbnMsg.setText(error);
+                lbnMsg.setStyle("-fx-text-fill: red; -fx-font-size: 14px;");
+                return;
+            }
             procesarFormulario();
         } else {
             mostrarErroresValidacion(violacionesOrdenadas);
         }
+    }
+
+    /** RUC: 11 dígitos y empieza en 10 o 20. DNI: 8 dígitos. Devuelve null si está bien. */
+    private String validarDocumento(String tipo, String doc) {
+        if ("RUC".equals(tipo) && !doc.matches("(10|20)\\d{9}")) {
+            return "El RUC debe tener 11 dígitos y empezar con 10 o 20";
+        }
+        if ("DNI".equals(tipo) && !doc.matches("\\d{8}")) {
+            return "El DNI debe tener 8 dígitos";
+        }
+        return null;
     }
 
     @FXML
