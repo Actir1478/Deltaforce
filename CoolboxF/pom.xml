@@ -191,6 +191,7 @@
                     <linkerArgs>
                         <arg>management_ext.lib</arg>
                         <arg>management.lib</arg>
+                        <arg>psapi.lib</arg>
                     </linkerArgs>
                     <!-- Ponlo a true la primera vez: verás qué está pasando -->
                     <verbose>true</verbose>
