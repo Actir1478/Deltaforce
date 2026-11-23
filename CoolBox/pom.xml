@@ -12,6 +12,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
+        <gluonfx.target>host</gluonfx.target>
+        <gluonfx.plugin.version>1.0.29</gluonfx.plugin.version>
     </properties>
 
     <dependencies>
@@ -90,6 +92,7 @@
             <artifactId>HikariCP</artifactId>
             <version>6.3.0</version>
         </dependency>
+
         <!-- ===== LOGGING ===== -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -148,6 +151,35 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>${gluonfx.plugin.version}</version>
+                <configuration>
+                    <target>${gluonfx.target}</target>
+                    <mainClass>pe.edu.upeu.sysventas.App</mainClass>
+                    <appIdentifier>pe.edu.upeu.sysventas</appIdentifier>
+                    <!-- Ponlo a true la primera vez: verás qué está pasando -->
+                    <verbose>true</verbose>
+                    <!-- Descomenta si no puedes usar la variable GRAALVM_HOME
+                    <graalvmHome>/ruta/a/graalvm</graalvmHome>
+                    -->
+                    <!-- Activa esto solo si el binario no arranca por falta de GPU -->
+                    <!-- <enableSWRendering>true</enableSWRendering> -->
+                    <!-- CRÍTICO: Registrar clases que JavaFX instancia por reflexión -->
+                    <reflectionList>
+                        <!-- <list>pe.edu.upeu.sysventas.AbrirConsolaH2</list>-->
+                        <list>pe.edu.upeu.sysventas.SysVentas</list>
+                    </reflectionList>
+                    <releaseConfiguration>
+                        <vendor>Mi Empresa S.A.</vendor>
+                        <description>Mi aplicación nativa</description>
+                        <version>1.0.0</version>
+                    </releaseConfiguration>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -170,4 +202,17 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties><gluonfx.target>host</gluonfx.target></properties>
+        </profile>
+        <profile>
+            <id>android</id>
+            <properties><gluonfx.target>android</gluonfx.target></properties>
+        </profile>
+    </profiles>
+
 </project>

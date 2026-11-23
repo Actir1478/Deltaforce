@@ -76,7 +76,8 @@ public class AppContext {
         registrar(IMenuMenuItemDao.class, new MenuMenuItemDaoImp());
 
         registrar(ConsultaDNI.class, new ConsultaDNI());
-        DataSource ds = DatabaseConfig.getDataSource();
+        //DataSource ds = DatabaseConfig.getDataSource();
+        DataSource ds = null;
         registrar(IVentaCarritoService.class, new VentaCarritoServiceImp(getBean(VentCarritoRepository.class)));
         registrar(IVentaDetalleService.class, new VentaDetalleServiceImp(getBean(VentaDetalleRepository.class)));
         registrar(IVentaService.class, new VentaServiceImp(getBean(VentaRepository.class), ds));
