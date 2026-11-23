@@ -273,7 +273,7 @@ public class ProductoController {
         }
         if (!erroresOrdenados.isEmpty()) {
             lbnMsg.setText(erroresOrdenados.entrySet().iterator().next().getValue());
-            lbnMsg.setStyle("-fx-text-fill: green; -fx-font-size: 16px;");
+            lbnMsg.setStyle("-fx-text-fill: red; -fx-font-size: 16px;");
             if (primerCtrl[0] != null) Platform.runLater(primerCtrl[0]::requestFocus);
         }
     }
@@ -281,7 +281,7 @@ public class ProductoController {
     private void procesarFormulario() {
         stage = (Stage) miContenedor.getScene().getWindow();
         lbnMsg.setText("Formulario válido");
-        lbnMsg.setStyle("-fx-text-fill: red; -fx-font-size: 16px;");
+        lbnMsg.setStyle("-fx-text-fill: green; -fx-font-size: 16px;");
         limpiarError();
         double w = stage.getWidth() / 1.5, h = stage.getHeight() / 2;
         try {

@@ -1,5 +1,9 @@
 package pe.edu.upeu.sysventas.service.impl;
 
+import pe.edu.upeu.sysventas.dto.SessionManager;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +63,14 @@ public class VentaServiceImp extends CrudGenericoServiceImp<Venta, Long>
 
         b.setTipoDocumento("BOLETA DE VENTA ELECTRÓNICA");
         b.setSerie("B001");
-        b.setNumero("00000042");
+        // Número correlativo según el id de la venta (ej: venta 7 -> 00000007)
+        b.setNumero(venta.getId() != null ? String.format("%08d", venta.getId()) : "00000001");
         b.setFechaEmision(venta.getFechaGener().toString());
         b.setMoneda("PEN");
+        b.setHora(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        String cajero = (venta.getIdUsuario() != null && venta.getIdUsuario().getUsuario() != null)
+                ? venta.getIdUsuario().getUsuario() : SessionManager.getInstance().getUserName();
+        b.setCajero(cajero != null ? cajero : "-");
 
         b.setTipoDocCliente(venta.getDniruc().getTipoDocumento().name());
         b.setNroDocCliente(venta.getDniruc().getDniruc());
@@ -71,7 +80,16 @@ public class VentaServiceImp extends CrudGenericoServiceImp<Venta, Long>
         List<ItemComprobante> items = new ArrayList<>();
 
         for (VentaDetalle vd : venta.getDetalleVenta()) {
-            items.add(new ItemComprobante(vd.getIdProducto().getNombre(), vd.getCantidad(), new BigDecimal(vd.getSubtotal())));
+            // Se pasa el precio unitario (antes se pasaba el subtotal y se multiplicaba dos veces por la cantidad)
+            ItemComprobante item = new ItemComprobante(vd.getIdProducto().getNombre(), vd.getCantidad(), BigDecimal.valueOf(vd.getPu()));
+            item.setCodigo(vd.getIdProducto().getIdProducto() != null ? String.valueOf(vd.getIdProducto().getIdProducto()) : "-");
+            // Promoción: si el producto tiene precio anterior mayor, se muestra el ahorro en la boleta
+            Double antes = vd.getIdProducto().getPuold();
+            if (antes != null && vd.getPu() != null && antes > vd.getPu()) {
+                item.setPrecioAntes(BigDecimal.valueOf(antes).setScale(2, RoundingMode.HALF_UP));
+                item.setDescuento(BigDecimal.valueOf((antes - vd.getPu()) * vd.getCantidad()).setScale(2, RoundingMode.HALF_UP));
+            }
+            items.add(item);
         }
         b.setItems(items);
         // Calcular totales
@@ -82,6 +100,8 @@ public class VentaServiceImp extends CrudGenericoServiceImp<Venta, Long>
         b.setOpGravadas(total.divide(new BigDecimal("1.18"), 2, RoundingMode.HALF_UP));
         b.setIgv(total.subtract(b.getOpGravadas()).setScale(2, RoundingMode.HALF_UP));
         b.setTotal(total.setScale(2, RoundingMode.HALF_UP));
+        b.setTotalDescuento(items.stream().map(ItemComprobante::getDescuento)
+                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP));
         return b;
     }
 
