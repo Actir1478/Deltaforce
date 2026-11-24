@@ -44,15 +44,30 @@ public class LoginController {
             return;
         }
 
-        us.loginUsuario(usuario, clave).ifPresentOrElse(
-                u -> abrirPantalla(e, u),
-                () -> {
-                    mensaje(e, "Usuario o clave incorrectos, o usuario inactivo");
-                    txtClave.clear();
-                    txtClave.requestFocus();
-                }
-        );
+        try {
+            us.loginUsuario(usuario, clave).ifPresentOrElse(
+                    u -> abrirPantalla(e, u),
+                    () -> {
+                        mensaje(e, "Usuario o clave incorrectos, o usuario inactivo");
+                        txtClave.clear();
+                        txtClave.requestFocus();
+                    }
+            );
+        } catch (Throwable t) {
+            guardarError("error-login.log", t);
+            mensaje(e, "Error de base de datos. Revisa error-login.log");
+        }
     }
+
+    /** Guarda el error en un archivo junto al .exe (la app de ventana no muestra la consola). */
+    private void guardarError(String archivo, Throwable t) {
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(archivo, "UTF-8")) {
+            t.printStackTrace(pw);
+        } catch (Exception ignore) {
+        }
+        t.printStackTrace();
+    }
+
     public void mensaje(ActionEvent e, String msg){
         Stage stage = (Stage) ((Node)e.getSource()).getScene().getWindow();
         double w = stage.getWidth() / 1.5, h = stage.getHeight() / 2;
@@ -100,7 +115,9 @@ public class LoginController {
             stage.setScene(scene);
             stage.setResizable(true);
             stage.show();
-        }catch (Exception ex) { ex.printStackTrace(); }
+        }catch (Throwable ex) {
+            guardarError("error-pantalla.log", ex);
+        }
 
     }
 

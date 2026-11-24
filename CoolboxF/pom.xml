@@ -202,6 +202,84 @@
                     <!-- <enableSWRendering>true</enableSWRendering> -->
                     <!-- CRÍTICO: Registrar clases que JavaFX instancia por reflexión -->
                     <reflectionList>
+                        <!-- Base de datos H2 -->
+                        <list>org.h2.Driver</list>
+                        <!-- JavaFX usado en los FXML -->
+                        <list>javafx.scene.Node</list>
+                        <list>javafx.scene.Parent</list>
+                        <list>javafx.scene.layout.Region</list>
+                        <list>javafx.scene.layout.Pane</list>
+                        <list>javafx.scene.layout.AnchorPane</list>
+                        <list>javafx.scene.layout.BorderPane</list>
+                        <list>javafx.scene.layout.FlowPane</list>
+                        <list>javafx.scene.layout.GridPane</list>
+                        <list>javafx.scene.layout.HBox</list>
+                        <list>javafx.scene.layout.VBox</list>
+                        <list>javafx.scene.layout.StackPane</list>
+                        <list>javafx.scene.layout.ColumnConstraints</list>
+                        <list>javafx.scene.layout.RowConstraints</list>
+                        <list>javafx.scene.control.Control</list>
+                        <list>javafx.scene.control.Labeled</list>
+                        <list>javafx.scene.control.ButtonBase</list>
+                        <list>javafx.scene.control.Button</list>
+                        <list>javafx.scene.control.Label</list>
+                        <list>javafx.scene.control.Hyperlink</list>
+                        <list>javafx.scene.control.MenuButton</list>
+                        <list>javafx.scene.control.TextInputControl</list>
+                        <list>javafx.scene.control.TextField</list>
+                        <list>javafx.scene.control.PasswordField</list>
+                        <list>javafx.scene.control.ComboBoxBase</list>
+                        <list>javafx.scene.control.ComboBox</list>
+                        <list>javafx.scene.control.DatePicker</list>
+                        <list>javafx.scene.control.ScrollPane</list>
+                        <list>javafx.scene.control.Separator</list>
+                        <list>javafx.scene.control.Tab</list>
+                        <list>javafx.scene.control.TabPane</list>
+                        <list>javafx.scene.control.TableView</list>
+                        <list>javafx.scene.control.ToolBar</list>
+                        <list>javafx.scene.control.Tooltip</list>
+                        <list>javafx.scene.image.Image</list>
+                        <list>javafx.scene.image.ImageView</list>
+                        <list>javafx.scene.text.Font</list>
+                        <list>javafx.geometry.Insets</list>
+                        <!-- Controladores FXML -->
+                        <list>pe.edu.upeu.sysventas.controller.ClienteController</list>
+                        <list>pe.edu.upeu.sysventas.controller.CompraController</list>
+                        <list>pe.edu.upeu.sysventas.controller.LoginController</list>
+                        <list>pe.edu.upeu.sysventas.controller.MainComprobanteController</list>
+                        <list>pe.edu.upeu.sysventas.controller.MainGuiController</list>
+                        <list>pe.edu.upeu.sysventas.controller.ProductoController</list>
+                        <list>pe.edu.upeu.sysventas.controller.ProveedorController</list>
+                        <list>pe.edu.upeu.sysventas.controller.VentaController</list>
+
+                        <!-- Modelos (TableView / PropertyValueFactory) -->
+                        <list>pe.edu.upeu.sysventas.model.Acceso</list>
+                        <list>pe.edu.upeu.sysventas.model.Categoria</list>
+                        <list>pe.edu.upeu.sysventas.model.Cliente</list>
+                        <list>pe.edu.upeu.sysventas.model.CompCarrito</list>
+                        <list>pe.edu.upeu.sysventas.model.Compra</list>
+                        <list>pe.edu.upeu.sysventas.model.CompraDetalle</list>
+                        <list>pe.edu.upeu.sysventas.model.DocumentoComercial</list>
+                        <list>pe.edu.upeu.sysventas.model.Emisor</list>
+                        <list>pe.edu.upeu.sysventas.model.Marca</list>
+                        <list>pe.edu.upeu.sysventas.model.Perfil</list>
+                        <list>pe.edu.upeu.sysventas.model.Producto</list>
+                        <list>pe.edu.upeu.sysventas.model.Promocion</list>
+                        <list>pe.edu.upeu.sysventas.model.Proveedor</list>
+                        <list>pe.edu.upeu.sysventas.model.UnidMedida</list>
+                        <list>pe.edu.upeu.sysventas.model.Usuario</list>
+                        <list>pe.edu.upeu.sysventas.model.VentCarrito</list>
+                        <list>pe.edu.upeu.sysventas.model.Venta</list>
+                        <list>pe.edu.upeu.sysventas.model.VentaDetalle</list>
+
+                        <!-- DTO -->
+                        <list>pe.edu.upeu.sysventas.dto.ComboBoxOption</list>
+                        <list>pe.edu.upeu.sysventas.dto.MenuMenuItenTO</list>
+                        <list>pe.edu.upeu.sysventas.dto.ModeloDataAutocomplet</list>
+                        <list>pe.edu.upeu.sysventas.dto.PersonaDto</list>
+                        <list>pe.edu.upeu.sysventas.dto.SessionManager</list>
+                        <list>pe.edu.upeu.sysventas.dto.comprobante.Comprobante</list>
+                        <list>pe.edu.upeu.sysventas.dto.comprobante.ItemComprobante</list>
                         <!-- <list>pe.edu.upeu.sysventas.AbrirConsolaH2</list>-->
                         <list>pe.edu.upeu.sysventas.SysVentas</list>
                     </reflectionList>

@@ -111,7 +111,7 @@ public class CompraController {
         columns.put("Cantidad", new ColumnInfo("cantidad", 80.0));
         columns.put("P.Compra", new ColumnInfo("punitario", 100.0));
         columns.put("P.Total", new ColumnInfo("ptotal", 100.0));
-        Consumer<CompCarrito> updateAction = c -> System.out.println("Actualizar: " + c);
+        Consumer<CompCarrito> updateAction = this::editarCarrito;
         Consumer<CompCarrito> deleteAction = this::eliminarDelCarrito;
         helper.addColumnsInOrderWithSize(tableView, columns, updateAction, deleteAction);
         tableView.setTableMenuButtonVisible(true);
@@ -183,6 +183,48 @@ public class CompraController {
         mensaje("Producto quitado de la compra", false);
     }
 
+    /** Cambia la cantidad y el precio de compra de un producto del carrito. */
+    public void editarCarrito(CompCarrito obj) {
+        String cantidadActual = obj.getCantidad() == Math.floor(obj.getCantidad())
+                ? String.valueOf(obj.getCantidad().longValue()) : String.valueOf(obj.getCantidad());
+        TextField txtCant = new TextField(cantidadActual);
+        TextField txtPrecio = new TextField(String.valueOf(obj.getPunitario()));
+
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.addRow(0, new Label("Cantidad"), txtCant);
+        grid.addRow(1, new Label("P. Compra"), txtPrecio);
+
+        Dialog<ButtonType> dialogo = new Dialog<>();
+        dialogo.setTitle("Coolbox");
+        dialogo.setHeaderText("Modificar " + obj.getNombreProducto());
+        dialogo.getDialogPane().setContent(grid);
+        dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Optional<ButtonType> respuesta = dialogo.showAndWait();
+        if (respuesta.isEmpty() || respuesta.get() != ButtonType.OK) return;
+
+        try {
+            double cantidad = Double.parseDouble(txtCant.getText().trim().replace(',', '.'));
+            double precio = Double.parseDouble(txtPrecio.getText().trim().replace(',', '.'));
+            if (cantidad <= 0 || precio <= 0) {
+                mensaje("La cantidad y el precio deben ser mayores que 0", true);
+                return;
+            }
+            obj.setCantidad(cantidad);
+            obj.setPunitario(precio);
+            obj.setPtotal(Math.round(cantidad * precio * 100.0) / 100.0);
+            carS.update(obj.getIdCompcarrito(), obj);
+            listar();
+            mensaje("Producto actualizado", false);
+        } catch (NumberFormatException e) {
+            mensaje("Escribe números válidos", true);
+        } catch (Exception e) {
+            mensaje("No se pudo modificar: " + (e.getMessage() != null ? e.getMessage() : e.toString()), true);
+        }
+    }
+
     @FXML
     public void registrarCompra() {
         if (idProveedorSel == null) {
@@ -248,6 +290,11 @@ public class CompraController {
     }
 
     private void limpiarProducto() {
+        txtNumDoc.clear();
+        txtSerie.clear();
+        txtRazonSocial.clear();
+        txtRucProveedor.clear();
+        autocompProveedor.clear();
         autocompProducto.clear();
         nombreProducto.clear();
         codigoPro.clear();

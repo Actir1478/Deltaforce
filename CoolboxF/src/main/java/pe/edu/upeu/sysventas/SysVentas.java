@@ -13,11 +13,39 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 public class SysVentas extends Application {
+
     @Override
     public void start(Stage stage) throws IOException {
-        Screen screen= Screen.getPrimary();
-        Rectangle2D rectangle2D=screen.getVisualBounds();
-        AppContext appContext= AppContext.getInstance();
+        // Registro global: cualquier error no capturado (por ejemplo al abrir un CRUD)
+        // se guarda en error-app.log junto al .exe
+        Thread.setDefaultUncaughtExceptionHandler((hilo, t) -> {
+            try (java.io.PrintWriter pw = new java.io.PrintWriter(
+                    new java.io.FileWriter("error-app.log", java.nio.charset.StandardCharsets.UTF_8, true))) {
+                pw.println("==== " + java.time.LocalDateTime.now() + " | hilo: " + hilo.getName() + " ====");
+                t.printStackTrace(pw);
+                pw.println();
+            } catch (Exception ignore) {
+            }
+            t.printStackTrace();
+        });
+
+        try {
+            iniciar(stage);
+        } catch (Throwable t) {
+            // Guarda el error en un archivo junto al .exe para poder verlo
+            try (java.io.PrintWriter pw = new java.io.PrintWriter("error-arranque.log", "UTF-8")) {
+                t.printStackTrace(pw);
+            } catch (Exception ignore) {
+            }
+            t.printStackTrace();
+            throw new RuntimeException(t);
+        }
+    }
+
+    private void iniciar(Stage stage) throws IOException {
+        Screen screen = Screen.getPrimary();
+        Rectangle2D rectangle2D = screen.getVisualBounds();
+        AppContext appContext = AppContext.getInstance();
         FXMLLoader fxmlLoader = new FXMLLoader(SysVentas.class.getResource("/view/login.fxml"));
         fxmlLoader.setControllerFactory(appContext::getBean);
         Scene scene = new Scene(fxmlLoader.load());
@@ -36,7 +64,7 @@ public class SysVentas extends Application {
      * y se cierra sola cuando se cierra el programa.
      */
     private void iniciarConsolaH2() {
-        String ruta = DatabaseConfig.dataDir() + "/sysventas";
+        String ruta = Paths.get("data", "sysventas").toAbsolutePath().toString().replace('\\', '/');
         try {
             org.h2.tools.Server.createWebServer("-webPort", "8082", "-webDaemon").start();
             System.out.println("=== Consola H2 lista: http://localhost:8082 ===");

@@ -1,9 +1,9 @@
 package pe.edu.upeu.sysventas.controller;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
+import pe.edu.upeu.sysventas.utils.Validation;
+import pe.edu.upeu.sysventas.utils.Validation.ConstraintViolation;
+import pe.edu.upeu.sysventas.utils.Validation.Validator;
+import pe.edu.upeu.sysventas.utils.Validation.ValidatorFactory;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

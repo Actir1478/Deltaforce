@@ -1,7 +1,6 @@
 package pe.edu.upeu.sysventas.config;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import org.h2.jdbcx.JdbcConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
- * Configuración de la base de datos H2 (embebida, en archivo o en memoria) con pool HikariCP.
+ * Configuración de la base de datos H2 (embebida, en archivo o en memoria) con el pool de
+ * conexiones propio de H2 ({@link JdbcConnectionPool}).
+ *
+ * <p>Se usa el pool de H2 en lugar de HikariCP porque HikariCP depende de reflexión interna
+ * y no arranca dentro del ejecutable nativo (GraalVM native image).
  *
  * <p>Propiedades opcionales en {@code application.properties}:
  * <ul>
@@ -36,7 +39,7 @@ public final class DatabaseConfig {
     private static final String DEFAULT_USER = "sa";
     private static final String DEFAULT_SCRIPT = "schema_sv.sql";
 
-    private static volatile HikariDataSource dataSource;
+    private static volatile JdbcConnectionPool dataSource;
 
     private DatabaseConfig() {
     }
@@ -46,25 +49,30 @@ public final class DatabaseConfig {
         if (dataSource != null) {
             return;
         }
-        Properties props = loadProperties();
-        String url = resolverUrl(props.getProperty("db.url", DEFAULT_URL));
-
-        HikariDataSource ds = createDataSource(url, props);
         try {
-            if (Boolean.parseBoolean(props.getProperty("db.ddl.auto", "true"))) {
-                // Se pueden indicar varios scripts separados por coma: primero las tablas, luego los datos
-                for (String script : props.getProperty("db.ddl.script", DEFAULT_SCRIPT).split(",")) {
-                    if (!script.isBlank()) {
-                        runScript(ds, script.trim());
+            Properties props = loadProperties();
+            String url = resolverUrl(props.getProperty("db.url", DEFAULT_URL));
+
+            JdbcConnectionPool ds = createDataSource(url, props);
+            try {
+                if (Boolean.parseBoolean(props.getProperty("db.ddl.auto", "true"))) {
+                    // Se pueden indicar varios scripts separados por coma: primero las tablas, luego los datos
+                    for (String script : props.getProperty("db.ddl.script", DEFAULT_SCRIPT).split(",")) {
+                        if (!script.isBlank()) {
+                            runScript(ds, script.trim());
+                        }
                     }
                 }
+            } catch (RuntimeException e) {
+                ds.dispose();
+                throw e;
             }
+            dataSource = ds;
+            LOG.info("H2 listo: {}", url);
         } catch (RuntimeException e) {
-            ds.close();
+            guardarError(e);
             throw e;
         }
-        dataSource = ds;
-        LOG.info("H2 listo: {}", url);
     }
 
     public static DataSource getDataSource() {
@@ -81,7 +89,7 @@ public final class DatabaseConfig {
     /** Cierra el pool. Una base H2 en memoria se pierde al cerrar su última conexión. */
     public static synchronized void shutdown() {
         if (dataSource != null) {
-            dataSource.close();
+            dataSource.dispose();
             dataSource = null;
         }
     }
@@ -107,19 +115,26 @@ public final class DatabaseConfig {
         return url;
     }
 
-    private static HikariDataSource createDataSource(String url, Properties props) {
-        HikariConfig config = new HikariConfig();
-        config.setPoolName("SysVentasPool");
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl(url);
-        config.setUsername(props.getProperty("db.username", DEFAULT_USER));
-        config.setPassword(props.getProperty("db.password", ""));
-        // App de escritorio con un solo usuario: un pool pequeño es suficiente.
-        config.setMaximumPoolSize(5);
+    private static JdbcConnectionPool createDataSource(String url, Properties props) {
         try {
-            return new HikariDataSource(config);
-        } catch (RuntimeException e) {
-            throw new IllegalStateException("No fue posible abrir la base de datos H2: " + url, e);
+            Class.forName("org.h2.Driver");
+            JdbcConnectionPool pool = JdbcConnectionPool.create(
+                    url,
+                    props.getProperty("db.username", DEFAULT_USER),
+                    props.getProperty("db.password", ""));
+            // App de escritorio con un solo usuario: un pool pequeño es suficiente.
+            pool.setMaxConnections(5);
+            return pool;
+        } catch (Throwable t) {
+            throw new IllegalStateException("No fue posible abrir la base de datos H2: " + url, t);
+        }
+    }
+
+    /** Guarda el error en un archivo junto al .exe (el ejecutable de ventana no muestra la consola). */
+    private static void guardarError(Throwable t) {
+        try (java.io.PrintWriter pw = new java.io.PrintWriter("error-h2.log", "UTF-8")) {
+            t.printStackTrace(pw);
+        } catch (Exception ignore) {
         }
     }
 

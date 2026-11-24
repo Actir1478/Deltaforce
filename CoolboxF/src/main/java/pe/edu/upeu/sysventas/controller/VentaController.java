@@ -205,6 +205,24 @@ public class VentaController {
         txtDireccion.clear();
     }
 
+    private void limpiarProducto() {
+        //txtDireccion.clear();
+        //razonSocial.clear();
+        //dniRuc.clear();
+        //autocompCliente.clear();
+        autocompProducto.clear();
+        nombreProducto.clear();
+        codigoPro.clear();
+        stockPro.clear();
+        cantidadPro.clear();
+        punitPro.clear();
+        preTPro.clear();
+        lastProducto = null;
+        actf.limpiarSeleccion();
+        btnRegCarrito.setDisable(true);
+        autocompProducto.requestFocus();
+    }
+
 
     @FXML
     public void guardarCliente(){
@@ -262,7 +280,7 @@ public class VentaController {
         columns.put("P.Unitario", new ColumnInfo("punitario", 100.0)); // Columna visible "Columna 2" mapea al campo "campo2"
         columns.put("P.Total", new ColumnInfo("ptotal", 100.0)); // Columna visible "Columna 2" mapea al campo "campo2"
 
-        Consumer<VentCarrito> updateAction = (VentCarrito ventCarrito) -> { System.out.println("Actualizar: " + ventCarrito); };
+        Consumer<VentCarrito> updateAction = this::editarCarrito;
         Consumer<VentCarrito> deleteAction = (VentCarrito ventCarrito) -> {deleteReg(ventCarrito); };
 
         tableViewHelper.addColumnsInOrderWithSize(tableView, columns,updateAction, deleteAction );
@@ -296,6 +314,47 @@ public class VentaController {
             Toast.showToast(stage, "Producto quitado del carrito", 2000, stage.getWidth() / 2, 80);
         }
         listar();
+    }
+
+    /** Cambia la cantidad de un producto que ya está en el carrito. */
+    public void editarCarrito(VentCarrito obj) {
+        String actual = obj.getCantidad() == Math.floor(obj.getCantidad())
+                ? String.valueOf(obj.getCantidad().longValue()) : String.valueOf(obj.getCantidad());
+        TextInputDialog dialogo = new TextInputDialog(actual);
+        dialogo.setTitle("Coolbox");
+        dialogo.setHeaderText("Modificar cantidad");
+        dialogo.setContentText(obj.getNombreProducto() + "  -  Cantidad:");
+        Optional<String> respuesta = dialogo.showAndWait();
+        if (respuesta.isEmpty()) return;
+
+        Stage st = StageManager.getPrimaryStage();
+        double with = st.getX() + st.getWidth() / 2 - 150;
+        try {
+            double nueva = Double.parseDouble(respuesta.get().trim().replace(',', '.'));
+            if (nueva <= 0) {
+                Toast.showToast(st, "La cantidad debe ser mayor que 0", 2000, with, 80);
+                return;
+            }
+            // Control de stock: no se puede vender más de lo que hay
+            Producto prod = ps.findById(obj.getIdProducto().getIdProducto());
+            if (prod.getStock() != null && nueva > prod.getStock()) {
+                Toast.showToast(st, "Stock insuficiente: solo hay " + prod.getStock() + " unidades", 2500, with, 80);
+                return;
+            }
+            obj.setCantidad(nueva);
+            obj.setPtotal(Math.round(nueva * obj.getPunitario() * 100.0) / 100.0);
+            daoC.update(obj.getIdCarrito(), obj);
+            listar();
+            Toast.showToast(st, "Cantidad actualizada", 1800, with, 80);
+        } catch (NumberFormatException e) {
+            Toast.showToast(st, "Escribe una cantidad válida", 2000, with, 80);
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Coolbox");
+            alert.setHeaderText("No se pudo modificar el producto");
+            alert.setContentText(e.getMessage() != null ? e.getMessage() : e.toString());
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -350,6 +409,7 @@ public class VentaController {
             daoC.save(ss);
             listar();
             Toast.showToast(stMsg, "Producto agregado al carrito", 1800, stMsg.getX() + stMsg.getWidth() / 2 - 150, 80);
+            limpiarProducto();   // <-- nueva línea
         }catch (Exception e){
             // El error se muestra en una ventana para que se pueda leer con calma
             e.printStackTrace();
@@ -365,7 +425,6 @@ public class VentaController {
     public void registrarVenta(){
         Locale locale = new Locale("es", "es-PE");
         LocalDateTime localDate = LocalDateTime.now();
-        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss", locale);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", locale);
         String fechaFormateada = localDate.format(formatter);
         List<VentCarrito> dd = daoC.listaCarritoCliente(dniRuc.getText());
@@ -413,14 +472,28 @@ public class VentaController {
             try {
                 if(comprobante!=null && dd.size()>0) {
                     mostrarVisorComprobante(comprobante);
-                    print(Long.parseLong(String.valueOf(idX.getId())));
+                    // El ticket térmico (ESC/POS) usa javax.print/AWT: no existe en el ejecutable nativo
+                    if (System.getProperty("org.graalvm.nativeimage.imagecode") == null) {
+                        try {
+                            print(Long.parseLong(String.valueOf(idX.getId())));
+                        } catch (Throwable ep) {
+                            guardarErrorVenta("error-impresion.log", ep);
+                        }
+                    }
                 }else{
                     Stage stage = StageManager.getPrimaryStage();
                     double with=stage.getX() + stage.getWidth()/2 - 150;
                     Toast.showToast(stage, "Error al generar comprobante", 2000, with, 50);
                 }
-            }catch (Exception e){
-                System.out.println("VER:"+e.getMessage());
+            }catch (Throwable e){
+                guardarErrorVenta("error-venta.log", e);
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Coolbox");
+                alert.setHeaderText("La venta se registró, pero no se pudo mostrar la boleta");
+                alert.setContentText("Revisa el archivo error-venta.log");
+                alert.showAndWait();
+            }finally {
+                limpiarVenta();
             }
 
         }else{
@@ -428,6 +501,32 @@ public class VentaController {
             double with=stage.getX() + stage.getWidth()/2 - 150;
             Toast.showToast(stage, "No hay productos en el carrito", 2000, with, 50);
         }
+    }
+
+    /** Deja la pantalla lista para una venta nueva: cliente, producto, carrito y totales. */
+    private void limpiarVenta() {
+        limpiarFormCliente();
+        autocompCliente.clear();
+        autocompProducto.clear();
+        nombreProducto.clear();
+        codigoPro.clear();
+        stockPro.clear();
+        cantidadPro.clear();
+        punitPro.clear();
+        preTPro.clear();
+        lastProducto = null;
+        lastCliente = null;
+        btnRegCarrito.setDisable(true);
+        listar(); // carrito vacío: la tabla y los totales quedan en cero
+    }
+
+    /** Guarda el error en un archivo junto al .exe (el ejecutable de ventana no muestra la consola). */
+    private void guardarErrorVenta(String archivo, Throwable t) {
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(archivo, "UTF-8")) {
+            t.printStackTrace(pw);
+        } catch (Exception ignore) {
+        }
+        t.printStackTrace();
     }
 
     public void mostrarVisorComprobante(Comprobante boleta) {
@@ -453,7 +552,7 @@ public class VentaController {
                 }
             });
         } catch (IOException ex) {
-            ex.printStackTrace();
+            throw new RuntimeException(ex); // lo registra registrarVenta() en error-venta.log
         }
     }
 

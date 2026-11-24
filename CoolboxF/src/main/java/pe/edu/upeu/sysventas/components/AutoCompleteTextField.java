@@ -77,4 +77,9 @@ public class AutoCompleteTextField<T>{
     public T getLastSelectedObject() {
         return lastSelectedObject;
     }
+
+    /** Olvida el último elemento elegido (se usa al limpiar el formulario). */
+    public void limpiarSeleccion() {
+        lastSelectedObject = null;
+    }
 }
