@@ -89,10 +89,8 @@ public class VentaController {
     @FXML
     public void initialize(){
 
-        Platform.runLater(() -> {
-            stage = (Stage) miContenedor.getScene().getWindow();
-            System.out.println("El título del stage es: " + stage.getTitle());
-        });
+        // La ventana principal ya está guardada desde el login; no depende de que la pantalla esté montada
+        stage = StageManager.getPrimaryStage();
 
         listarCliente();
         autoCompletarCliente();
